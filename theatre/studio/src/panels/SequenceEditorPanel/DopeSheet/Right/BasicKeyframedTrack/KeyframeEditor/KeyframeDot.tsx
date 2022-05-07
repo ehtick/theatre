@@ -10,11 +10,11 @@ import useDrag from '@theatre/studio/uiComponents/useDrag'
 import type {UseDragOpts} from '@theatre/studio/uiComponents/useDrag'
 import useRefAndState from '@theatre/studio/utils/useRefAndState'
 import {val} from '@theatre/dataverse'
+import type {Pointer} from '@theatre/dataverse'
 import {lighten} from 'polished'
 import React, {useMemo, useRef} from 'react'
 import styled from 'styled-components'
-import {useLockFrameStampPosition} from '@theatre/studio/panels/SequenceEditorPanel/FrameStampPositionProvider'
-import {includeLockFrameStampAttrs} from '@theatre/studio/panels/SequenceEditorPanel/FrameStampPositionProvider'
+import {includeLockFrameStampAttrs, useLockFrameStampPosition} from '@theatre/studio/panels/SequenceEditorPanel/FrameStampPositionProvider'
 import {
   lockedCursorCssVarName,
   useCssCursorLock,
@@ -23,6 +23,10 @@ import SnapCursor from './SnapCursor.svg'
 import selectedKeyframeIdsIfInSingleTrack from '@theatre/studio/panels/SequenceEditorPanel/DopeSheet/Right/BasicKeyframedTrack/selectedKeyframeIdsIfInSingleTrack'
 import type {IKeyframeEditorProps} from './KeyframeEditor'
 import DopeSnap from '@theatre/studio/panels/SequenceEditorPanel/RightOverlay/DopeSnap'
+import usePopover from '@theatre/studio/uiComponents/Popover/usePopover'
+import DeterminePropEditor from '@theatre/studio/panels/DetailPanel/propEditors/DeterminePropEditor'
+import type {$FixMe} from '@theatre/shared/utils/types'
+import {popoverBackgroundColor} from '@theatre/studio/uiComponents/Popover/BasicPopover'
 
 export const DOT_SIZE_PX = 6
 const HIT_ZONE_SIZE_PX = 12
@@ -100,8 +104,14 @@ type IKeyframeDotProps = IKeyframeEditorProps
 const KeyframeDot: React.VFC<IKeyframeDotProps> = (props) => {
   const [ref, node] = useRefAndState<HTMLDivElement | null>(null)
 
-  const [isDragging] = useDragKeyframe(node, props)
   const [contextMenu] = useKeyframeContextMenu(node, props)
+  const [inlineEditor, openEditor] = useKeyframeInlineEditor(props)
+  const [isDragging] = useDragKeyframe(node, props, {
+    onClickFromDrag(dragStartEvent) {
+      console.log('attempting to open editor')
+      openEditor(dragStartEvent, ref.current!)
+    },
+  })
 
   return (
     <>
@@ -112,6 +122,7 @@ const KeyframeDot: React.VFC<IKeyframeDotProps> = (props) => {
         className={isDragging ? 'beingDragged' : ''}
       />
       <Diamond isSelected={!!props.selection} />
+      {inlineEditor}
       {contextMenu}
     </>
   )
@@ -140,9 +151,46 @@ function useKeyframeContextMenu(
   })
 }
 
+const KeyframeInlineEditorPopover = styled.div`
+  position: absolute;
+  background-color: ${popoverBackgroundColor};
+  color: white;
+  padding: 0;
+  margin: 0;
+  cursor: default;
+  border-radius: 3px;
+  z-index: 10000;
+  backdrop-filter: blur(8px);
+
+  padding: 4;
+  pointer-events: all;
+
+  border: none;
+  box-shadow: none;
+`
+
+function useKeyframeInlineEditor(props: IKeyframeDotProps) {
+  const obj = props.leaf.sheetObject
+  // useVal(props.layoutP.sheet.getObject)()
+
+  return usePopover({}, () => (
+    <KeyframeInlineEditorPopover>
+      <DeterminePropEditor
+        obj={obj}
+        pointerToProp={obj.propsP as Pointer<$FixMe>}
+        propConfig={obj.template.config}
+        visualIndentation={1}
+      />
+    </KeyframeInlineEditorPopover>
+  ))
+}
+
 function useDragKeyframe(
   node: HTMLDivElement | null,
   props: IKeyframeDotProps,
+  options: {
+    onClickFromDrag(dragStartEvent: MouseEvent): void
+  },
 ): [isDragging: boolean] {
   const propsRef = useRef(props)
   propsRef.current = props
@@ -156,10 +204,13 @@ function useDragKeyframe(
       | ReturnType<DopeSheetSelection['getDragHandlers']>
       | undefined
 
+    let lastDragStart: MouseEvent
+
     return {
       debugName: 'KeyframeDot/useDragKeyframe',
 
       onDragStart(event) {
+        lastDragStart = event
         const props = propsRef.current
         if (props.selection) {
           const {selection, leaf} = props
@@ -215,6 +266,10 @@ function useDragKeyframe(
         })
       },
       onDragEnd(dragHappened) {
+        if (!dragHappened) {
+          options.onClickFromDrag(lastDragStart)
+        }
+
         if (selectionDragHandlers) {
           selectionDragHandlers.onDragEnd?.(dragHappened)
 
@@ -263,7 +318,7 @@ function copyKeyFrameContextMenuItem(
   keyframeIds: string[],
 ): IContextMenuItem {
   return {
-    label: keyframeIds.length > 1 ? 'Copy selection' : 'Copy keyframe',
+    label: keyframeIds.length > 1 ? 'Copy Selection' : 'Copy Keyframe',
     callback: () => {
       const keyframes = keyframeIds.map(
         (keyframeId) =>
