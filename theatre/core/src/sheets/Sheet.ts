@@ -36,6 +36,7 @@ export default class Sheet {
     public readonly instanceId: SheetInstanceId,
   ) {
     this._logger = template.project._logger.named('Sheet', instanceId)
+    this._logger._trace('creating sheet')
     this.project = template.project
     this.address = {
       ...template.address,

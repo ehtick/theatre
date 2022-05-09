@@ -26,6 +26,6 @@ const internal = createTheatreInternalLogger(console, {
 })
 internal.configureLogging({
   dev: true,
-  max: TheatreLoggerLevel.TRACE,
+  min: TheatreLoggerLevel.TRACE,
 })
 export default internal.getLogger().named('(default logger)').downgrade.dev()

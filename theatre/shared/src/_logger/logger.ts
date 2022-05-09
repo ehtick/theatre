@@ -97,15 +97,19 @@ export type ITheatreLogIncludes = {
    * General information max level.
    * e.g. `Project imported might be corrupted`
    */
-  max?: TheatreLoggerLevel
+  min?: TheatreLoggerLevel
   /**
    * Include logs meant for developers using Theatre.js
    * e.g. `Created new project 'Abc' with options {...}`
+   *
+   * defaults to `true` if `internal: true` or defaults to `false`.
    */
   dev?: boolean
   /**
    * Include logs meant for internal development of Theatre.js
    * e.g. `Migrated project 'Abc' { duration_ms: 34, from_version: 1, to_version: 3, imported_settings: false }`
+   *
+   * defaults to `false`
    */
   internal?: boolean
 }
@@ -127,9 +131,9 @@ enum _Audience {
   /** Logs for developers of Theatre.js */
   INTERNAL = 0,
   /** Logs for developers using Theatre.js */
-  DEV = (1 << 2) | _Audience.INTERNAL,
+  DEV = 1 << 2,
   /** Logs for users of the app using Theatre.js */
-  PUBLIC = (1 << 3) | _Audience.INTERNAL | _Audience.DEV,
+  PUBLIC = 1 << 3,
 }
 
 export enum TheatreLoggerLevel {
@@ -159,7 +163,7 @@ function shouldLog(
       ? includes.dev
       : (level & _Audience.INTERNAL) === _Audience.INTERNAL
       ? includes.internal
-      : false) && includes.max <= level
+      : false) && includes.min <= level
   )
 }
 
@@ -238,7 +242,7 @@ const DEFAULTS: InternalLoggerRef = {
   includes: Object.freeze({
     internal: false,
     dev: false,
-    max: TheatreLoggerLevel.WARN,
+    min: TheatreLoggerLevel.WARN,
   }),
   filtered: function defaultFiltered() {},
   include: function defaultInclude() {
@@ -358,7 +362,7 @@ export function createTheatreInternalLogger(
     configureLogging(config) {
       ref.includes.dev = config.dev ?? DEFAULTS.includes.dev
       ref.includes.internal = config.internal ?? DEFAULTS.includes.internal
-      ref.includes.max = config.max ?? DEFAULTS.includes.max
+      ref.includes.min = config.min ?? DEFAULTS.includes.min
       ref.include = config.include ?? DEFAULTS.include
       ref.loggingConsoleStyle =
         config.consoleStyle ?? DEFAULTS.loggingConsoleStyle

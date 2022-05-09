@@ -63,6 +63,7 @@ export default class SheetObject implements IdentityDerivationProvider {
       'SheetObject',
       template.address.objectKey,
     )
+    this._logger._trace('creating object')
     this._internalUtilCtx = {logger: this._logger.downgrade.internal()}
     this.address = {
       ...template.address,

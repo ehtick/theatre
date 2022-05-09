@@ -7,7 +7,7 @@ describe('Theatre internal logger: shouldLog', () => {
     {
       dev: true,
       internal: true,
-      max: TheatreLoggerLevel.TRACE,
+      min: TheatreLoggerLevel.TRACE,
     },
     {
       _ERROR: true,
@@ -31,7 +31,7 @@ describe('Theatre internal logger: shouldLog', () => {
     {
       dev: true,
       internal: true,
-      max: TheatreLoggerLevel.DEBUG,
+      min: TheatreLoggerLevel.DEBUG,
     },
     {
       _ERROR: true,
@@ -55,7 +55,7 @@ describe('Theatre internal logger: shouldLog', () => {
     {
       dev: true,
       internal: false,
-      max: TheatreLoggerLevel.TRACE,
+      min: TheatreLoggerLevel.TRACE,
     },
     {
       _ERROR: false,
@@ -79,7 +79,7 @@ describe('Theatre internal logger: shouldLog', () => {
     {
       dev: false,
       internal: false,
-      max: TheatreLoggerLevel.TRACE,
+      min: TheatreLoggerLevel.TRACE,
     },
     {
       _ERROR: false,
@@ -103,7 +103,7 @@ describe('Theatre internal logger: shouldLog', () => {
     {
       dev: true,
       internal: false,
-      max: TheatreLoggerLevel.WARN,
+      min: TheatreLoggerLevel.WARN,
     },
     {
       _ERROR: false,
@@ -127,7 +127,7 @@ describe('Theatre internal logger: shouldLog', () => {
     {
       dev: false,
       internal: true,
-      max: TheatreLoggerLevel.TRACE,
+      min: TheatreLoggerLevel.TRACE,
     },
     {
       _ERROR: true,
@@ -152,7 +152,7 @@ function testIncludes(
   config: {
     dev: boolean
     internal: boolean
-    max: TheatreLoggerLevel
+    min: TheatreLoggerLevel
   },
   expectations: {[P in keyof typeof _LoggerLevel]: boolean},
 ) {
@@ -164,7 +164,7 @@ function testIncludes(
         const stackless = new Error(
           `Expected shouldLog({ dev: ${config.dev}, internal: ${
             config.internal
-          }, max: ${TheatreLoggerLevel[config.max]} }, ${level}) = ${actual}`,
+          }, max: ${TheatreLoggerLevel[config.min]} }, ${level}) = ${actual}`,
         )
         stackless.stack = undefined // stack is not useful in test
         throw stackless

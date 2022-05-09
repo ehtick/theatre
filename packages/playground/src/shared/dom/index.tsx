@@ -19,7 +19,8 @@ ReactDOM.render(
       experiments: {
         logging: {
           internal: true,
-          max: TheatreLoggerLevel.TRACE,
+          dev: true,
+          min: TheatreLoggerLevel.TRACE,
         },
       },
     })}

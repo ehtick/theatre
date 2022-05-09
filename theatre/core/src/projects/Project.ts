@@ -27,10 +27,10 @@ import {_coreLogger} from '@theatre/core/_coreLogger'
 
 export type Conf = Partial<{
   state: OnDiskState
-  experiments: ExperimentalConf
+  experiments: ExperimentsConf
 }>
 
-export type ExperimentalConf = Partial<{
+export type ExperimentsConf = Partial<{
   logger: ITheatreLoggerConfig
   logging: ITheatreLoggingConfig
 }>
@@ -67,6 +67,7 @@ export default class Project {
     readonly publicApi: TheatreProject,
   ) {
     this._logger = _coreLogger(config.experiments).named('Project', id)
+    this._logger.traceDev('creating project')
     this.address = {projectId: id}
 
     const onDiskStateAtom = new Atom<ProjectState>({
@@ -108,6 +109,7 @@ export default class Project {
         // let's give it one tick to attach itself
         if (!this._studio) {
           this._readyDeferred.resolve(undefined)
+          this._logger._trace('ready deferred resolved with no state')
         }
       }, 0)
     } else {
@@ -132,7 +134,7 @@ export default class Project {
           `Project ${this.address.projectId} is already attached to studio ${this._studio.address.studioId}`,
         )
       } else {
-        console.warn(
+        this._logger.warnDev(
           `Project ${this.address.projectId} is already attached to studio ${this._studio.address.studioId}`,
         )
         return

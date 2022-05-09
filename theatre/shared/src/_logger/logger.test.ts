@@ -38,7 +38,7 @@ describeLogger('Theatre internal logger', (setup) => {
       h.internal.configureLogging({
         dev: true,
         internal: true,
-        max: TheatreLoggerLevel.TRACE,
+        min: TheatreLoggerLevel.TRACE,
       })
 
       const t = h.t()
@@ -65,7 +65,7 @@ describeLogger('Theatre internal logger', (setup) => {
       h.internal.configureLogging({
         dev: true,
         internal: true,
-        max: TheatreLoggerLevel.WARN,
+        min: TheatreLoggerLevel.WARN,
       })
 
       const t = h.t()
@@ -86,7 +86,7 @@ describeLogger('Theatre internal logger', (setup) => {
 
       h.internal.configureLogging({
         dev: true,
-        max: TheatreLoggerLevel.WARN,
+        min: TheatreLoggerLevel.WARN,
       })
 
       const t = h.t()
@@ -198,7 +198,7 @@ describeLogger('Theatre internal logger', (setup) => {
 
       h.internal.configureLogging({
         internal: true,
-        max: TheatreLoggerLevel.TRACE,
+        min: TheatreLoggerLevel.TRACE,
       })
 
       const internal = h.t().downgrade.internal()
