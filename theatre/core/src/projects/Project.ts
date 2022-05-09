@@ -18,9 +18,21 @@ import type {
   SheetId,
   SheetInstanceId,
 } from '@theatre/shared/utils/ids'
+import type {
+  ILogger,
+  ITheatreLoggerConfig,
+  ITheatreLoggingConfig,
+} from '@theatre/shared/logger'
+import {_coreLogger} from '@theatre/core/_coreLogger'
 
 export type Conf = Partial<{
   state: OnDiskState
+  experiments: ExperimentalConf
+}>
+
+export type ExperimentalConf = Partial<{
+  logger: ITheatreLoggerConfig
+  logging: ITheatreLoggingConfig
 }>
 
 export default class Project {
@@ -47,12 +59,14 @@ export default class Project {
   private _studio: Studio | undefined
 
   type: 'Theatre_Project' = 'Theatre_Project'
+  readonly _logger: ILogger
 
   constructor(
     id: ProjectId,
     readonly config: Conf = {},
     readonly publicApi: TheatreProject,
   ) {
+    this._logger = _coreLogger(config.experiments).named('Project', id)
     this.address = {projectId: id}
 
     const onDiskStateAtom = new Atom<ProjectState>({
